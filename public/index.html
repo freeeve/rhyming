@@ -1,0 +1,87 @@
+<html>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-7s5uDGW3AHqw6xtJmNNtr+OBRJUlgkNJEo78P4b0yRw= sha512-nNo+yCHEyn0smMxSswnf/OnX6/KwJuZTlNZBjauKhTK0c+zT+q5JOCx0UFhXQ6rJR9jg6Es8gPuD2uZcYDLqSw==" crossorigin="anonymous">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha256-KXn5puMvxCw+dAYznun+drMdG1IFl3agK0p/pqT9KAo= sha512-2e8qq0ETcfWRI4HJBzQiA3UoyFk6tbNyG+qSaIBZLyW9Xf3sWZHN/lxe9fTh1U45DpPf07yj94KsUHHWe4Yk1A==" crossorigin="anonymous"></script>
+<script>
+$(function() {
+  $("#query").keypress(function (e) {
+    if((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
+      $("#submit").click();
+      return false;
+    } else {
+      return true;
+    }
+  });
+  $("#submit").click(function() {
+    $.get("/search?q="+encodeURIComponent($("#query").val()),
+        function(data) {
+          bestLevel = 0;
+          $("#2phones").html("");
+          $("#3phones").html("");
+          $("#4phones").html("");
+          $("#5phones").html("");
+          if(data.RhymesWith2) {
+            $("#2phones").html("<p>"+data.RhymesWith2.join(", ")+"</p>");
+            bestLevel = 2;
+          }
+          if(data.RhymesWith3) {
+            $("#3phones").html("<p>"+data.RhymesWith3.join(", ")+"</p>");
+            bestLevel = 3;
+          }
+          if(data.RhymesWith4) {
+            $("#4phones").html("<p>"+data.RhymesWith4.join(", ")+"</p>");
+            bestLevel = 4;
+          }
+          if(data.RhymesWith5) {
+            $("#5phones").html("<p>"+data.RhymesWith5.join(", ")+"</p>");
+            bestLevel = 5;
+          }
+          $("#word").text(data.Word);
+          $("#syllables").text(data.Syllables);
+          $("#pronunciation").text(data.PronunciationStr);
+          $("#soundex").text(data.Soundex);
+          $("#results").show();
+        }, "json");
+  });
+});
+</script>
+<style>
+p {
+  font-family:Arial;
+}
+.container {
+  margin-left:auto;
+  margin-right:auto;
+}
+body {
+  padding-top: 70px;
+}
+</style>
+</head>
+<body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">Eve's Rhyming Dictionary</a>
+        </div>
+      </div>
+    </nav>
+  <div class="container">
+    <input id="query" type="text" placeholder="enter a word here"/>
+    <button id="submit">submit</button>
+    <div id="results" style="display:none">
+    <h2>Rhymes for <span id="word"></span></h2>
+    <h4>Syllables: <span id="syllables"></span>, Pronunciation: <span id="pronunciation"></span>, Soundex: <span id="soundex"></span></h4>
+    <h3>5 <a href="http://www.speech.cs.cmu.edu/cgi-bin/cmudict">CMU</a> phones matching (best)</h3>
+    <div id="5phones"></div>
+    <h3>4 <a href="http://www.speech.cs.cmu.edu/cgi-bin/cmudict">CMU</a> phones matching</h3>
+    <div id="4phones"></div>
+    <h3>3 <a href="http://www.speech.cs.cmu.edu/cgi-bin/cmudict">CMU</a> phones matching</h3>
+    <div id="3phones"></div>
+    <h3>2 <a href="http://www.speech.cs.cmu.edu/cgi-bin/cmudict">CMU</a> phones matching (worst)</h3>
+    <div id="2phones"></div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+	"ImportPath": "github.com/wfreeman/rhyming",
+	"GoVersion": "go1.4.2",
+	"Deps": [
+		{
+			"ImportPath": "github.com/daaku/go.httpgzip",
+			"Rev": "a336c4bfd42faf5b18b9d90dcdfe3b4fc13a8fa5"
+		},
+		{
+			"ImportPath": "github.com/dotcypress/phonetics",
+			"Rev": "5cea56e8d200eb3a864ac9b07225f9175e7030be"
+		}
+	]
+}
