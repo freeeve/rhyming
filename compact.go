@@ -17,11 +17,16 @@ func AppendBytes(bs []byte, id int32) []byte {
 			x -= ids[i-1]
 		}
 		if x < 1<<7 {
-			br.WriteByte(byte(x) | 1<<7)
-		} else {
-			br.WriteByte(byte(x >> 16))
+			br.WriteByte(byte(x))
+		} else if x < 1<<14 {
+			br.WriteByte(byte(x>>8) | (2 << 6))
+			br.WriteByte(byte(x))
+		} else if x < 1<<22 {
+			br.WriteByte(byte(x>>16) | (3 << 6))
 			br.WriteByte(byte(x >> 8))
 			br.WriteByte(byte(x))
+		} else {
+			panic("int out of range for compaction scheme")
 		}
 	}
 	//fmt.Println("ids:", ids)
@@ -50,13 +55,25 @@ func DecodeBytes(bs []byte) []int32 {
 			fmt.Println(err)
 			break
 		}
-		if b&(byte(1)<<7) != 0 {
+		if b>>7 == 0 {
 			if len(ids) > 0 {
 				ids = append(ids, int32(b&0x7F)+ids[len(ids)-1])
 			} else {
 				ids = append(ids, int32(b&0x7f))
 			}
-		} else {
+		} else if b>>6 == 2 {
+			b2, err := br.ReadByte()
+			if err != nil {
+				fmt.Println(err)
+				break
+			}
+			b &= 0x3F
+			if len(ids) > 0 {
+				ids = append(ids, (int32(b)<<8|int32(b2))+ids[len(ids)-1])
+			} else {
+				ids = append(ids, int32(b)<<8|int32(b2))
+			}
+		} else if b>>6 == 3 {
 			b2, err := br.ReadByte()
 			if err != nil {
 				fmt.Println(err)
@@ -67,6 +84,7 @@ func DecodeBytes(bs []byte) []int32 {
 				fmt.Println(err)
 				break
 			}
+			b &= 0x3F
 			if len(ids) > 0 {
 				ids = append(ids, (int32(b)<<16|int32(b2)<<8|int32(b3))+ids[len(ids)-1])
 			} else {
@@ -74,8 +92,8 @@ func DecodeBytes(bs []byte) []int32 {
 			}
 		}
 	}
-	fmt.Printf("decode: %x\n", bs)
-	fmt.Println("decoded:", ids)
+	//fmt.Printf("encoded(hex): %x\n", bs)
+	//	fmt.Println("decoded:", ids)
 	return ids
 }
 

@@ -67,7 +67,7 @@ func createRhymes() {
 	f, err := os.Open("mhyph2.txt")
 	br := bufio.NewReader(f)
 	defer f.Close()
-	//temp := map[string]struct{}{}
+	temp := map[string]struct{}{}
 	for err == nil {
 		line := ""
 		line, err = br.ReadString('\n')
@@ -79,7 +79,7 @@ func createRhymes() {
 		word := strings.Join(arr, "")
 
 		word = strings.ToLower(word)
-		//temp[word] = struct{}{}
+		temp[word] = struct{}{}
 	}
 
 	f2, err := os.Open("cmudict-0.7b")
@@ -98,26 +98,26 @@ func createRhymes() {
 		arr := strings.Split(line, "  ")
 		word := arr[0]
 		word = strings.ToLower(word)
-		//if _, ok := temp[word]; ok {
-		w := Word{}
-		w.Pronunciation = []Symbol{}
-		pronounce := strings.Split(arr[1], " ")
-		for _, x := range pronounce {
-			sym, err := ParseSymbol(x)
-			if err != nil {
-				panic(err)
+		if _, ok := temp[word]; ok {
+			w := Word{}
+			w.Pronunciation = []Symbol{}
+			pronounce := strings.Split(arr[1], " ")
+			for _, x := range pronounce {
+				sym, err := ParseSymbol(x)
+				if err != nil {
+					panic(err)
+				}
+				w.Pronunciation = append(w.Pronunciation, sym)
 			}
-			w.Pronunciation = append(w.Pronunciation, sym)
-		}
-		w.Soundex = phonetics.EncodeSoundex(word)
-		w.Syllables = 0
-		for _, v := range w.Pronunciation {
-			if v.Type() == Vowel {
-				w.Syllables++
+			w.Soundex = phonetics.EncodeSoundex(word)
+			w.Syllables = 0
+			for _, v := range w.Pronunciation {
+				if v.Type() == Vowel {
+					w.Syllables++
+				}
 			}
+			dict.Add(word, w)
 		}
-		dict.Add(word, w)
-		//}
 	}
 
 	count := 0
